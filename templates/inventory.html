@@ -1,94 +1,109 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<!-- HEADER & ACTION BAR -->
+<!-- HEADER & TOP ACTION BUTTONS -->
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
     <div>
-        <h4 class="fw-bold mb-0 text-dark">INVENTORY MANAGEMENT</h4>
-        <small class="text-muted">Real-time asset tracking system</small>
+        <h3 class="fw-bold mb-0 text-dark">BIGDATA DC SARIAYA INVENTORY</h3>
+        <small class="text-muted">Real-time asset tracking and device management portal</small>
     </div>
     <div class="d-flex gap-2">
         {% if current_user.role == 'admin' %}
-        <a href="{{ url_for('add_device') }}" class="btn btn-primary btn-sm fw-semibold shadow-sm w-100 w-md-auto">+ Add Device</a>
+        <a href="{{ url_for('add_device') }}" class="btn btn-success fw-bold btn-sm shadow-sm w-100 w-md-auto">+ Add Device</a>
         <a href="{{ url_for('export_csv') }}" class="btn btn-outline-secondary btn-sm fw-semibold w-100 w-md-auto">Export CSV</a>
         {% endif %}
     </div>
 </div>
 
-<!-- SEARCH & IMPORT CONTROLS -->
-<div class="glass-card p-2 mb-3">
+<!-- COMPACT ACTION BAR: CSV IMPORT & REAL-TIME SEARCH FILTER -->
+<div class="card p-3 mb-3 shadow-sm border-0 rounded-3 bg-white">
     <div class="row g-2 align-items-center">
         {% if current_user.role == 'admin' %}
+        <!-- Compact CSV Upload Form -->
         <div class="col-12 col-md-5">
-            <form action="{{ url_for('import_csv') }}" method="POST" enctype="multipart/form-data" class="d-flex gap-1">
+            <form action="{{ url_for('import_csv') }}" method="POST" enctype="multipart/form-data" class="d-flex align-items-center gap-1">
                 <input type="file" name="csv_file" class="form-control form-control-sm" accept=".csv" required>
-                <button type="submit" class="btn btn-sm btn-dark text-nowrap">Import</button>
+                <button type="submit" class="btn btn-sm btn-primary text-nowrap">Import CSV</button>
             </form>
         </div>
         {% endif %}
 
+        <!-- Real-Time Search Filter -->
         <div class="col-12 {% if current_user.role == 'admin' %}col-md-7{% else %}col-md-12{% endif %}">
             <div class="input-group input-group-sm">
                 <span class="input-group-text bg-light border-end-0">🔍</span>
-                <input type="text" id="searchInput" onkeyup="filterTable()" class="form-control border-start-0" placeholder="Search serial, account, store, person in charge...">
+                <input type="text" id="searchInput" onkeyup="filterTable()" class="form-control border-start-0" placeholder="Search Serial No, Account No, Store, PIC, Network...">
             </div>
         </div>
     </div>
 </div>
 
-<!-- TOP STATUS COUNTERS (MOBILE SCROLLABLE / DESKTOP GRID) -->
+<!-- TOP STATUS COUNTER CARDS -->
 <div class="row g-2 mb-3">
     <div class="col-6 col-md">
-        <div class="glass-card p-2 text-center" onclick="filterStatus('ALL')" style="cursor: pointer; border-left: 4px solid #3b82f6;">
-            <small class="text-muted fw-bold d-block">TOTAL</small>
-            <h4 class="mb-0 fw-bold text-dark">{{ counts.TOTAL }}</h4>
+        <div class="card bg-primary text-white shadow-sm text-center border-0 rounded-3 filter-card h-100" onclick="filterStatus('ALL')" style="cursor: pointer;">
+            <div class="card-body py-2 px-1">
+                <small class="fw-bold d-block opacity-75">TOTAL</small>
+                <h4 class="mb-0 fw-bold">{{ counts.TOTAL }}</h4>
+            </div>
         </div>
     </div>
     <div class="col-6 col-md">
-        <div class="glass-card p-2 text-center" onclick="filterStatus('DEPLOYED')" style="cursor: pointer; border-left: 4px solid #10b981;">
-            <small class="text-success fw-bold d-block">DEPLOYED</small>
-            <h4 class="mb-0 fw-bold text-success">{{ counts.DEPLOYED }}</h4>
+        <div class="card bg-success text-white shadow-sm text-center border-0 rounded-3 filter-card h-100" onclick="filterStatus('DEPLOYED')" style="cursor: pointer;">
+            <div class="card-body py-2 px-1">
+                <small class="fw-bold d-block opacity-75">DEPLOYED</small>
+                <h4 class="mb-0 fw-bold">{{ counts.DEPLOYED }}</h4>
+            </div>
         </div>
     </div>
     <div class="col-6 col-md">
-        <div class="glass-card p-2 text-center" onclick="filterStatus('ONHAND')" style="cursor: pointer; border-left: 4px solid #f59e0b;">
-            <small class="text-warning fw-bold d-block">ONHAND</small>
-            <h4 class="mb-0 fw-bold text-warning">{{ counts.ONHAND }}</h4>
+        <div class="card bg-warning text-dark shadow-sm text-center border-0 rounded-3 filter-card h-100" onclick="filterStatus('ONHAND')" style="cursor: pointer;">
+            <div class="card-body py-2 px-1">
+                <small class="fw-bold d-block text-dark opacity-75">ONHAND</small>
+                <h4 class="mb-0 fw-bold text-dark">{{ counts.ONHAND }}</h4>
+            </div>
         </div>
     </div>
     <div class="col-6 col-md">
-        <div class="glass-card p-2 text-center" onclick="filterStatus('TRANSFER')" style="cursor: pointer; border-left: 4px solid #06b6d4;">
-            <small class="text-info fw-bold d-block">TRANSFER</small>
-            <h4 class="mb-0 fw-bold text-info">{{ counts.TRANSFER }}</h4>
+        <div class="card bg-info text-dark shadow-sm text-center border-0 rounded-3 filter-card h-100" onclick="filterStatus('TRANSFER')" style="cursor: pointer;">
+            <div class="card-body py-2 px-1">
+                <small class="fw-bold d-block text-dark opacity-75">TRANSFER</small>
+                <h4 class="mb-0 fw-bold text-dark">{{ counts.TRANSFER }}</h4>
+            </div>
         </div>
     </div>
     <div class="col-6 col-md">
-        <div class="glass-card p-2 text-center" onclick="filterStatus('MISSING')" style="cursor: pointer; border-left: 4px solid #ef4444;">
-            <small class="text-danger fw-bold d-block">MISSING</small>
-            <h4 class="mb-0 fw-bold text-danger">{{ counts.MISSING }}</h4>
+        <div class="card bg-danger text-white shadow-sm text-center border-0 rounded-3 filter-card h-100" onclick="filterStatus('MISSING')" style="cursor: pointer;">
+            <div class="card-body py-2 px-1">
+                <small class="fw-bold d-block opacity-75">MISSING</small>
+                <h4 class="mb-0 fw-bold">{{ counts.MISSING }}</h4>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- DESKTOP TABLE VIEW (HIDDEN ON SMALL MOBILE SCREENS) -->
-<div class="d-none d-md-block glass-card p-3">
+<!-- DESKTOP TABLE VIEW (VISIBLE ON MEDIUM SCREENS AND UP) -->
+<div class="d-none d-md-block card border-0 shadow-sm rounded-3 p-3 bg-white">
     <div class="d-flex justify-content-between align-items-center mb-2">
-        <span class="badge bg-light text-dark border" id="tableTitle">Showing All Devices</span>
-        <button class="btn btn-sm btn-link text-decoration-none p-0" onclick="resetFilters()">Reset Filters</button>
+        <h6 class="mb-0 text-muted fw-semibold" id="tableTitle">Showing All Devices</h6>
+        <button class="btn btn-sm btn-link text-decoration-none p-0 fw-semibold" onclick="resetFilters()">Reset All Filters</button>
     </div>
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0" id="inventoryTable">
-            <thead class="table-light small text-uppercase">
+            <thead class="table-dark">
                 <tr>
                     <th>Account #</th>
-                    <th>Serial #</th>
+                    <th>Serial # (Click Map)</th>
                     <th>SIM #</th>
                     <th>Network</th>
                     <th>Status</th>
                     <th>Store Code/Name</th>
-                    <th>Deployed Date</th>
+                    <th>Lat, Long</th>
+                    <th>Date Deployed</th>
                     <th>Duration</th>
-                    <th>Actions</th>
+                    <th>Remarks</th>
+                    <th>Person in Charge</th>
+                    <th class="text-end">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -96,21 +111,24 @@
                 <tr data-status="{{ dev.status }}" class="device-row">
                     <td class="fw-semibold">{{ dev.account_number }}</td>
                     <td>
-                        <a href="{{ url_for('history_map', serial_number=dev.serial_number) }}" class="text-decoration-none fw-bold">
+                        <a href="{{ url_for('history_map', serial_number=dev.serial_number) }}" class="fw-bold text-decoration-none text-primary">
                             📍 {{ dev.serial_number }}
                         </a>
                     </td>
                     <td>{{ dev.sim_number or 'N/A' }}</td>
                     <td><span class="badge bg-secondary opacity-75">{{ dev.network or 'N/A' }}</span></td>
                     <td>
-                        <span class="badge {% if dev.status == 'DEPLOYED' %}bg-success{% elif dev.status == 'MISSING' %}bg-danger{% elif dev.status == 'TRANSFER' %}bg-info text-dark{% else %}bg-warning text-dark{% endif %}">
+                        <span class="badge status-badge {% if dev.status == 'DEPLOYED' %}bg-success{% elif dev.status == 'MISSING' %}bg-danger{% elif dev.status == 'TRANSFER' %}bg-info text-dark{% else %}bg-warning text-dark{% endif %}">
                             {{ dev.status }}
                         </span>
                     </td>
                     <td>{{ dev.store_code_name or 'N/A' }}</td>
+                    <td><small class="text-muted">{% if dev.latitude %}{{ dev.latitude }}, {{ dev.longitude }}{% else %}N/A{% endif %}</small></td>
                     <td>{{ dev.date_deployed or 'N/A' }}</td>
-                    <td><small class="fw-bold">{{ dev.duration_days }} Days</small></td>
-                    <td>
+                    <td><strong class="text-dark">{{ dev.duration_days }} Days</strong></td>
+                    <td><small class="text-muted">{{ dev.remarks or 'N/A' }}</small></td>
+                    <td>{{ dev.person_in_charge or 'N/A' }}</td>
+                    <td class="text-end">
                         <a href="{{ url_for('edit_device', id=dev.id) }}" class="btn btn-sm btn-outline-primary py-0">Edit</a>
                         {% if current_user.role == 'admin' %}
                         <a href="{{ url_for('delete_device', id=dev.id) }}" class="btn btn-sm btn-outline-danger py-0" onclick="return confirm('Delete record?')">Del</a>
@@ -126,32 +144,40 @@
 <!-- MOBILE CARD VIEW (VISIBLE ONLY ON MOBILE DEVICES) -->
 <div class="d-md-none" id="mobileCardsContainer">
     {% for dev in devices %}
-    <div class="glass-card p-3 mb-2 device-card" data-status="{{ dev.status }}">
+    <div class="card border-0 shadow-sm rounded-3 p-3 mb-2 bg-white device-card" data-status="{{ dev.status }}">
+        <!-- Header Row -->
         <div class="d-flex justify-content-between align-items-start mb-2">
             <div>
                 <span class="badge {% if dev.status == 'DEPLOYED' %}bg-success{% elif dev.status == 'MISSING' %}bg-danger{% elif dev.status == 'TRANSFER' %}bg-info text-dark{% else %}bg-warning text-dark{% endif %} mb-1">
                     {{ dev.status }}
                 </span>
-                <h6 class="fw-bold mb-0 text-dark">{{ dev.account_number }}</h6>
+                <h6 class="fw-bold mb-0 text-dark">Acct: {{ dev.account_number }}</h6>
             </div>
             <span class="badge bg-secondary opacity-75">{{ dev.network or 'N/A' }}</span>
         </div>
 
-        <div class="small mb-2">
-            <div class="text-muted">Serial Number:</div>
-            <a href="{{ url_for('history_map', serial_number=dev.serial_number) }}" class="fw-bold text-decoration-none d-block text-truncate">
+        <!-- Serial / Location Map Link -->
+        <div class="mb-2">
+            <small class="text-muted d-block">Serial Number:</small>
+            <a href="{{ url_for('history_map', serial_number=dev.serial_number) }}" class="fw-bold text-decoration-none text-primary fs-6">
                 📍 {{ dev.serial_number }}
             </a>
         </div>
 
-        <div class="row g-1 small mb-2 bg-light p-2 rounded">
-            <div class="col-6"><strong>Store:</strong> {{ dev.store_code_name or 'N/A' }}</div>
+        <!-- Key Details Grid -->
+        <div class="row g-1 small mb-2 bg-light p-2 rounded-2">
+            <div class="col-12"><strong>Store:</strong> {{ dev.store_code_name or 'N/A' }}</div>
             <div class="col-6"><strong>SIM:</strong> {{ dev.sim_number or 'N/A' }}</div>
             <div class="col-6"><strong>Deployed:</strong> {{ dev.date_deployed or 'N/A' }}</div>
             <div class="col-6"><strong>Duration:</strong> {{ dev.duration_days }} Days</div>
-            <div class="col-12 mt-1"><strong>Person In Charge:</strong> {{ dev.person_in_charge or 'N/A' }}</div>
+            <div class="col-6"><strong>PIC:</strong> {{ dev.person_in_charge or 'N/A' }}</div>
+            <div class="col-12 text-truncate"><strong>Coords:</strong> {% if dev.latitude %}{{ dev.latitude }}, {{ dev.longitude }}{% else %}N/A{% endif %}</div>
+            {% if dev.remarks %}
+            <div class="col-12 text-muted"><strong>Remarks:</strong> {{ dev.remarks }}</div>
+            {% endif %}
         </div>
 
+        <!-- Action Buttons -->
         <div class="d-flex justify-content-end gap-1">
             <a href="{{ url_for('edit_device', id=dev.id) }}" class="btn btn-sm btn-outline-primary py-1 px-3">Edit</a>
             {% if current_user.role == 'admin' %}
@@ -175,24 +201,35 @@ function filterStatus(status) {
 
 function filterTable() {
     const searchInput = document.getElementById('searchInput').value.toLowerCase();
-    
-    // Filter Desktop Rows
+    const tableTitle = document.getElementById('tableTitle');
+
+    if (currentStatusFilter === 'ALL') {
+        tableTitle.innerText = searchInput ? `Search results for: "${searchInput}"` : "Showing All Devices";
+    } else {
+        tableTitle.innerText = `Filtered Status: ${currentStatusFilter}` + (searchInput ? ` | Search: "${searchInput}"` : "");
+    }
+
+    // 1. Filter Desktop Rows
     const rows = document.querySelectorAll('.device-row');
     rows.forEach(row => {
         const rowStatus = row.getAttribute('data-status');
         const rowText = row.innerText.toLowerCase();
+
         const matchesStatus = (currentStatusFilter === 'ALL' || rowStatus === currentStatusFilter);
         const matchesSearch = rowText.includes(searchInput);
+
         row.style.display = (matchesStatus && matchesSearch) ? '' : 'none';
     });
 
-    // Filter Mobile Cards
+    // 2. Filter Mobile Cards
     const cards = document.querySelectorAll('.device-card');
     cards.forEach(card => {
         const cardStatus = card.getAttribute('data-status');
         const cardText = card.innerText.toLowerCase();
+
         const matchesStatus = (currentStatusFilter === 'ALL' || cardStatus === currentStatusFilter);
         const matchesSearch = cardText.includes(searchInput);
+
         card.style.display = (matchesStatus && matchesSearch) ? '' : 'none';
     });
 }
