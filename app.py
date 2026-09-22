@@ -8,8 +8,16 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'bigdata_sariaya_secret_key_2026'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///inventory.db'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'bigdata_sariaya_secret_key_2026')
+
+# --- DATABASE CONFIGURATION (POSTGRES / SQLITE FALLBACK) ---
+db_url = os.environ.get('DATABASE_URL', 'sqlite:///inventory.db')
+
+# Fix SQLAlchemy compatibility issue with Render's postgres:// prefix
+if db_url and db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -72,8 +80,6 @@ def init_db():
 
 # --- Routes ---
 
-
-
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -104,11 +110,6 @@ def profile():
         return redirect(url_for('profile'))
 
     return render_template('profile.html')
-
-
-
-
-
 
 @app.route('/')
 @login_required
@@ -457,7 +458,9 @@ def import_csv():
 
     return redirect(url_for('inventory'))
 
+# Ensure database tables are created on initialization
+init_db()
+
 if __name__ == '__main__':
-    init_db()
     # 0.0.0.0 binds to all available network adapters
     app.run(host='0.0.0.0', port=5050, debug=True)
