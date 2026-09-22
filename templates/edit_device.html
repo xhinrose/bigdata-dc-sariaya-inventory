@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ 'Edit Device Details' if device else 'Add New Device Entry' }}</h2>
+
+<form method="POST" class="bg-white p-4 shadow-sm rounded">
+    {% if require_pullout %}
+    <div class="alert alert-warning">
+        <strong>Pullout Prompt:</strong> Changing status from DEPLOYED to ONHAND requires specifying the pullout date.
+        <div class="mt-2">
+            <label class="form-label">Device Pullout Date</label>
+            <input type="date" name="pullout_date" class="form-control" required>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-3">
+        <!-- Admin Restricted Fields -->
+        <div class="col-md-3">
+            <label class="form-label">Account Number</label>
+            <input type="text" name="account_number" value="{{ device.account_number if device else '' }}" class="form-control" {% if current_user.role != 'admin' %}readonly{% endif %} required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Serial Number</label>
+            <input type="text" name="serial_number" value="{{ device.serial_number if device else '' }}" class="form-control" {% if current_user.role != 'admin' %}readonly{% endif %} required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">SIM Number</label>
+            <input type="text" name="sim_number" value="{{ device.sim_number if device else '' }}" class="form-control" {% if current_user.role != 'admin' %}readonly{% endif %} required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Network</label>
+            <select name="network" class="form-select" {% if current_user.role != 'admin' %}disabled{% endif %}>
+                {% for net in ['SMART', 'DITO', 'GLOBE'] %}
+                <option value="{{ net }}" {% if device and device.network == net %}selected{% endif %}>{{ net }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Editable Fields -->
+        <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select">
+                {% for st in ['ONHAND', 'DEPLOYED', 'TRANSFER', 'MISSING'] %}
+                <option value="{{ st }}" {% if device and device.status == st %}selected{% endif %}>{{ st }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-5">
+            <label class="form-label">Store Code / Name</label>
+            <input type="text" name="store_code_name" value="{{ device.store_code_name if device else '' }}" class="form-control">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Latitude</label>
+            <input type="number" step="any" name="latitude" value="{{ device.latitude if device else '' }}" class="form-control">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Longitude</label>
+            <input type="number" step="any" name="longitude" value="{{ device.longitude if device else '' }}" class="form-control">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Date Deployed</label>
+            <input type="date" name="date_deployed" value="{{ device.date_deployed if device else '' }}" class="form-control">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Remarks</label>
+            <select name="remarks" class="form-select">
+                {% for rem in ['NEW STORE', 'TEMPORARY', 'PERMANENT', 'FOR TESTING'] %}
+                <option value="{{ rem }}" {% if device and device.remarks == rem %}selected{% endif %}>{{ rem }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Person In Charge</label>
+            <input type="text" name="person_in_charge" value="{{ device.person_in_charge if device else '' }}" class="form-control">
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-4">Save Changes</button>
+    <a href="{{ url_for('inventory') }}" class="btn btn-secondary mt-4">Cancel</a>
+</form>
+{% endblock %}

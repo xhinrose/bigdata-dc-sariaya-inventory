@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Admin Panel - User Management</h2>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card p-3 shadow-sm">
+            <h5>Encode New User</h5>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Role Privilege</label>
+                    <select name="role" class="form-select">
+                        <option value="editor">Editor (Device Editable Only)</option>
+                        <option value="admin">Admin (Full Access Control)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success w-100">Create User Account</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card p-3 shadow-sm">
+            <h5>System User Registry</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Privilege Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.username }}</td>
+                        <td><span class="badge bg-secondary">{{ user.role|upper }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

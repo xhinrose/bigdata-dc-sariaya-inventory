@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Device Movement Tracking Minimap</h2>
+<p>Serial Number: <strong>{{ serial_number }}</strong></p>
+
+<div class="card shadow-sm p-3">
+    <div id="map"></div>
+</div>
+<a href="{{ url_for('inventory') }}" class="btn btn-secondary mt-3">Back to Inventory</a>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const serial = "{{ serial_number }}";
+    fetch(`/api/history/${serial}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.history.length === 0) {
+                alert('No deployment history recorded for this unit.');
+                return;
+            }
+
+            // Center map around latest recorded location
+            const map = L.map('map').setView([data.history[0].lat, data.history[0].lng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+            const latlngs = [];
+
+            // Plot last 3 points
+            data.history.forEach((point, index) => {
+                const pos = [point.lat, point.lng];
+                latlngs.push(pos);
+                
+                L.marker(pos).addTo(map)
+                    .bindPopup(`<b>Deployment #${data.history.length - index}</b><br>Store: ${point.store}<br>Date: ${point.timestamp}`)
+                    .openPopup();
+            });
+
+            // Draw directional routing line across deployment stops
+            if (latlngs.length > 1) {
+                const polyline = L.polyline(latlngs, {color: 'red', weight: 4, dashArray: '5, 10'}).addTo(map);
+                map.fitBounds(polyline.getBounds());
+            }
+        });
+</script>
+{% endblock %}

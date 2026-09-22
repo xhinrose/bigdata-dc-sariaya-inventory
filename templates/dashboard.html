@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>System Analytics & Data Dashboard</h2>
+<div class="row my-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3 text-center">
+            <div class="card-body">
+                <h3>{{ total }}</h3>
+                <p class="mb-0">Total Tracked Devices</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card p-3 shadow-sm">
+            <h5 class="card-title text-center">Device Status Distribution</h5>
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-3 shadow-sm">
+            <h5 class="card-title text-center">Network Distribution</h5>
+            <canvas id="networkChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const statusData = {{ status_counts | tojson }};
+    const networkData = {{ network_counts | tojson }};
+
+    new Chart(document.getElementById('statusChart'), {
+        type: 'pie',
+        data: {
+            labels: Object.keys(statusData),
+            datasets: [{ data: Object.values(statusData) }]
+        }
+    });
+
+    new Chart(document.getElementById('networkChart'), {
+        type: 'bar',
+        data: {
+            labels: Object.keys(networkData),
+            datasets: [{ label: 'Units', data: Object.values(networkData) }]
+        }
+    });
+</script>
+{% endblock %}
