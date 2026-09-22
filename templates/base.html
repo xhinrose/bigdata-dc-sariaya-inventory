@@ -2,93 +2,116 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Essential for Mobile Viewports -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BIGDATA DC SARIAYA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIGDATA DC SARIAYA INVENTORY</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Modern Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            --glass-card: rgba(255, 255, 255, 0.95);
-            --accent-cyan: #06b6d4;
-            --accent-blue: #3b82f6;
-        }
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-        body {
+    <style>
+        body { 
             font-family: 'Inter', sans-serif;
-            background: #f8fafc;
-            color: #334155;
+            background-color: #f8f9fa; 
             min-height: 100vh;
         }
 
-        /* Modern Futuristic Header Navbar */
-        .navbar-futuristic {
-            background: #0f172a;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+        /* Desktop Sidebar */
+        .sidebar { 
+            min-height: 100vh; 
+            width: 260px;
+            background-color: #1e293b; 
+            color: white; 
+            flex-shrink: 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+        .sidebar a { 
+            color: #94a3b8; 
+            text-decoration: none; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px; 
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .sidebar a:hover, .sidebar a.active { 
+            color: #ffffff; 
+            background-color: #334155; 
         }
 
-        .navbar-brand {
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            background: linear-gradient(90deg, #38bdf8, #818cf8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        /* Leaflet Map Default Sizing */
+        #map { 
+            height: 450px; 
+            width: 100%; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
-        /* Futuristic Glass Cards */
-        .glass-card {
-            background: #ffffff;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        /* Responsive Container Sizing */
-        @media (max-width: 768px) {
-            .container-fluid {
-                padding-left: 10px;
-                padding-right: 10px;
+        /* Mobile View Navigation (Top Header Bar) */
+        @media (max-width: 767.98px) {
+            .sidebar {
+                min-height: auto;
+                width: 100%;
+                box-shadow: none;
+            }
+            .mobile-wrapper {
+                flex-direction: column !important;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- Header Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-futuristic py-2 sticky-top">
-        <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('inventory') }}">
-                <span>⚡ BIGDATA DC SARIAYA</span>
-            </a>
-            
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navMenu">
-                <ul class="navbar-nav ms-auto align-items-lg-center gap-2 mt-2 mt-lg-0">
-                    {% if current_user.is_authenticated %}
-                    <li class="nav-item">
-                        <span class="nav-link text-light opacity-75 small">User: <strong>{{ current_user.username }}</strong> ({{ current_user.role }})</span>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-danger w-100">Logout</a>
-                    </li>
-                    {% endif %}
-                </ul>
+<div class="d-flex mobile-wrapper">
+    {% if current_user.is_authenticated %}
+    <!-- RESPONSIVE SIDEBAR / NAVIGATION BAR -->
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark d-md-none px-3 py-2">
+        <a class="navbar-brand fw-bold" href="#">BIGDATA DC SARIAYA</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse mt-2" id="mobileMenu">
+            <p class="text-muted small mb-2">User: <strong>{{ current_user.username }}</strong> ({{ current_user.role|upper }})</p>
+            <div class="d-flex flex-column gap-1">
+                <a href="{{ url_for('dashboard') }}" class="text-white text-decoration-none py-1">📊 Analytics Dashboard</a>
+                <a href="{{ url_for('inventory') }}" class="text-white text-decoration-none py-1">📦 Inventory List</a>
+                {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('manage_users') }}" class="text-white text-decoration-none py-1">👥 Admin User Control</a>
+                {% endif %}
+                <a href="{{ url_for('profile') }}" class="text-white text-decoration-none py-1">⚙️ Edit Profile</a>
+                <a href="{{ url_for('logout') }}" class="text-danger text-decoration-none py-1 fw-bold">🔒 Logout</a>
             </div>
         </div>
     </nav>
 
-    <!-- Main Container -->
-    <div class="container-fluid py-3">
+    <!-- DESKTOP SIDEBAR -->
+    <div class="sidebar p-3 d-none d-md-block">
+        <h4 class="text-white text-center mb-1 fw-bold">BIGDATA DC</h4>
+        <small class="text-primary text-center d-block fw-bold mb-3">SARIAYA SYSTEM</small>
+        <p class="text-muted text-center small mb-3">User: <strong>{{ current_user.username }}</strong> ({{ current_user.role|upper }})</p>
+        <hr class="border-secondary">
+        <div class="d-flex flex-column gap-1">
+            <a href="{{ url_for('dashboard') }}">📊 Analytics Dashboard</a>
+            <a href="{{ url_for('inventory') }}">📦 Inventory List</a>
+            {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('manage_users') }}">👥 Admin User Control</a>
+            {% endif %}
+            <a href="{{ url_for('profile') }}">⚙️ Edit Profile</a>
+        </div>
+        <hr class="border-secondary mt-4">
+        <a href="{{ url_for('logout') }}" class="text-danger fw-semibold">🔒 Logout</a>
+    </div>
+    {% endif %}
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="flex-grow-1 p-3 p-md-4">
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, message in messages %}
@@ -102,9 +125,11 @@
 
         {% block content %}{% endblock %}
     </div>
+</div>
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    {% block scripts %}{% endblock %}
+<!-- JavaScript Dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{% block scripts %}{% endblock %}
 </body>
 </html>
